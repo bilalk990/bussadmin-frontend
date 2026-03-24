@@ -20,26 +20,24 @@ const AppInitializer = () => {
         const token = authService.getToken();
         if (!token) {
           navigate('/login');
+          setIsInitializing(false);
           return;
         }
 
-        // Check if token is expired using isAuthenticated
+        // Check if token is expired using isAuthenticated (client-side only)
         if (!authService.isAuthenticated()) {
           authService.removeToken();
           navigate('/login');
+          setIsInitializing(false);
           return;
         }
 
-        // Validate token with server
-        const isValid = await authService.validateToken();
-        if (!isValid) {
-          authService.removeToken();
-          navigate('/login');
-        }
+        // Token is valid on client side, allow access
+        setIsInitializing(false);
       } catch (error) {
+        console.error('Auth initialization error:', error);
         authService.removeToken();
         navigate('/login');
-      } finally {
         setIsInitializing(false);
       }
     };
