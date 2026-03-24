@@ -219,6 +219,15 @@ const CompaniesManagement: React.FC = () => {
                     <div className="absolute right-0 mt-2 w-48 bg-gray-800 rounded-lg shadow-lg py-1 z-10">
                       <button
                         onClick={() => {
+                          window.location.href = `/companies/${company.id}/analytics`;
+                        }}
+                        className="flex items-center gap-2 w-full px-4 py-2 text-sm text-blue-400 hover:bg-gray-700/50"
+                      >
+                        <Eye size={16} />
+                        <span>View Analytics</span>
+                      </button>
+                      <button
+                        onClick={() => {
                           handleViewDetails(company.id);
                           setSelectedMenuCompany(null);
                         }}
