@@ -11,6 +11,7 @@ import ScheduleManagement from './pages/ScheduleManagement';
 import Analytics from './pages/Analytics';
 import Settings from './pages/Settings';
 import CompaniesManagement from './pages/CompaniesManagement';
+import CompanyAnalytics from './pages/CompanyAnalytics';
 import StaffManagement from './pages/StaffManagement';
 import SupportTickets from './pages/SupportTickets';
 import BookingsManagement from './pages/BookingsManagement';
@@ -110,6 +111,11 @@ const App = () => {
             <Route path="/companies" element={
               <AuthenticatedLayout>
                 <CompaniesManagement />
+              </AuthenticatedLayout>
+            } />
+            <Route path="/companies/:companyId/analytics" element={
+              <AuthenticatedLayout>
+                <CompanyAnalytics />
               </AuthenticatedLayout>
             } />
             <Route path="/settings" element={
