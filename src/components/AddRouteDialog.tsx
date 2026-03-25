@@ -400,9 +400,9 @@ export const AddRouteDialog: React.FC<AddRouteDialogProps> = ({ isOpen, onClose,
                                 <span className="bg-primary-500 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs">
                                   {index + 1}
                                 </span>
-                                {stop.name.split(',')[0]}
+                                {stop?.name?.split(',')[0] || 'Stop ' + (index + 1)}
                               </div>
-                              <div className="text-xs text-gray-400 mt-1 truncate">{stop.name}</div>
+                              <div className="text-xs text-gray-400 mt-1 truncate">{stop?.name || 'No location'}</div>
                             </div>
                             <button
                               type="button"
