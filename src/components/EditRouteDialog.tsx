@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Dialog } from '@headlessui/react';
-import { X, Search, Loader2 } from 'lucide-react';
+import { X, Search, Loader2, MapPin, Trash2, Plus } from 'lucide-react';
 import { locationService, LocationSuggestion } from '../services/locationService';
 import { routeService, Route, UpdateRouteData } from '../services/routeService';
 
@@ -9,6 +9,16 @@ interface EditRouteDialogProps {
   onClose: () => void;
   onRouteUpdated: () => void;
   route: Route;
+}
+
+interface Stop {
+  id: string;
+  name: string;
+  lat: number;
+  lon: number;
+  arrivalTime?: string;
+  departureTime?: string;
+  duration?: number;
 }
 
 interface RouteFormData {
@@ -27,6 +37,7 @@ interface RouteFormData {
   adultPrice: string;
   childPrice: string;
   status: 'active' | 'inactive' | 'modified';
+  stops: Stop[];
 }
 
 export const EditRouteDialog: React.FC<EditRouteDialogProps> = ({ isOpen, onClose, onRouteUpdated, route }) => {
@@ -37,16 +48,20 @@ export const EditRouteDialog: React.FC<EditRouteDialogProps> = ({ isOpen, onClos
     distance: route.distance,
     adultPrice: route.adultPrice.toString(),
     childPrice: route.childPrice.toString(),
-    status: route.status
+    status: route.status,
+    stops: []
   });
 
   const [originInput, setOriginInput] = useState(route.origin);
   const [destinationInput, setDestinationInput] = useState(route.destination);
+  const [stopInput, setStopInput] = useState('');
   const [originSuggestions, setOriginSuggestions] = useState<LocationSuggestion[]>([]);
   const [destinationSuggestions, setDestinationSuggestions] = useState<LocationSuggestion[]>([]);
+  const [stopSuggestions, setStopSuggestions] = useState<LocationSuggestion[]>([]);
   const [isCalculatingDistance, setIsCalculatingDistance] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [showStops, setShowStops] = useState(false);
 
   useEffect(() => {
     if (isOpen) {
@@ -90,6 +105,47 @@ export const EditRouteDialog: React.FC<EditRouteDialogProps> = ({ isOpen, onClos
     } catch (error) {
       console.error('Error searching destination:', error);
     }
+  };
+
+  const handleSearchStop = async (query: string) => {
+    setStopInput(query);
+    if (query.length < 3) {
+      setStopSuggestions([]);
+      return;
+    }
+    try {
+      const suggestions = await locationService.searchLocations(query);
+      setStopSuggestions(suggestions);
+    } catch (error) {
+      console.error('Error searching stop:', error);
+    }
+  };
+
+  const addStop = (suggestion: LocationSuggestion) => {
+    const newStop: Stop = {
+      id: Date.now().toString(),
+      name: suggestion.display_name,
+      lat: suggestion.lat,
+      lon: suggestion.lon,
+      duration: 5
+    };
+    setFormData(prev => ({ ...prev, stops: [...prev.stops, newStop] }));
+    setStopInput('');
+    setStopSuggestions([]);
+  };
+
+  const removeStop = (stopId: string) => {
+    setFormData(prev => ({
+      ...prev,
+      stops: prev.stops.filter(s => s.id !== stopId)
+    }));
+  };
+
+  const updateStop = (stopId: string, field: keyof Stop, value: any) => {
+    setFormData(prev => ({
+      ...prev,
+      stops: prev.stops.map(s => s.id === stopId ? { ...s, [field]: value } : s)
+    }));
   };
 
   const calculateDistance = async () => {
@@ -303,6 +359,109 @@ export const EditRouteDialog: React.FC<EditRouteDialogProps> = ({ isOpen, onClos
                 <option value="inactive">Inactive</option>
                 <option value="modified">Modified</option>
               </select>
+            </div>
+
+            {/* Stops Section */}
+            <div className="border-t border-gray-700 pt-4">
+              <div className="flex items-center justify-between mb-3">
+                <label className="block text-sm font-medium text-gray-400">
+                  <MapPin className="inline w-4 h-4 mr-1" />
+                  Intermediate Stops (Optional)
+                </label>
+                <button
+                  type="button"
+                  onClick={() => setShowStops(!showStops)}
+                  className="text-xs text-primary-500 hover:text-primary-400"
+                >
+                  {showStops ? 'Hide' : 'Edit Stops'}
+                </button>
+              </div>
+
+              {showStops && (
+                <div className="space-y-3">
+                  <div className="relative">
+                    <input
+                      type="text"
+                      value={stopInput}
+                      onChange={(e) => handleSearchStop(e.target.value)}
+                      placeholder="Search for a stop location..."
+                      className="w-full px-3 py-2 bg-gray-800 border border-gray-700 rounded-md text-white focus:outline-none focus:ring-2 focus:ring-primary-500 text-sm"
+                    />
+                    <Search size={16} className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400" />
+                    {stopSuggestions.length > 0 && (
+                      <div className="absolute z-10 w-full mt-1 bg-gray-800 border border-gray-700 rounded-md shadow-lg max-h-48 overflow-y-auto">
+                        {stopSuggestions.map((suggestion) => (
+                          <button
+                            key={suggestion.place_id}
+                            type="button"
+                            onClick={() => addStop(suggestion)}
+                            className="w-full px-3 py-2 text-left text-white hover:bg-gray-700 text-sm truncate"
+                          >
+                            {suggestion.display_name}
+                          </button>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+
+                  {formData.stops.length > 0 && (
+                    <div className="space-y-2 max-h-60 overflow-y-auto">
+                      {formData.stops.map((stop, index) => (
+                        <div key={stop.id} className="bg-gray-800 border border-gray-700 rounded-md p-3">
+                          <div className="flex items-start justify-between mb-2">
+                            <div className="flex-1">
+                              <div className="text-sm font-medium text-white flex items-center gap-2">
+                                <span className="bg-primary-500 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs">
+                                  {index + 1}
+                                </span>
+                                {stop?.name?.split(',')[0] || 'Stop ' + (index + 1)}
+                              </div>
+                              <div className="text-xs text-gray-400 mt-1 truncate">{stop?.name || 'No location'}</div>
+                            </div>
+                            <button
+                              type="button"
+                              onClick={() => removeStop(stop.id)}
+                              className="text-red-400 hover:text-red-300 ml-2"
+                            >
+                              <Trash2 size={16} />
+                            </button>
+                          </div>
+                          <div className="grid grid-cols-3 gap-2 mt-2">
+                            <div>
+                              <label className="text-xs text-gray-400">Arrival</label>
+                              <input
+                                type="time"
+                                value={stop.arrivalTime || ''}
+                                onChange={(e) => updateStop(stop.id, 'arrivalTime', e.target.value)}
+                                className="w-full px-2 py-1 bg-gray-900 border border-gray-700 rounded text-white text-xs"
+                              />
+                            </div>
+                            <div>
+                              <label className="text-xs text-gray-400">Departure</label>
+                              <input
+                                type="time"
+                                value={stop.departureTime || ''}
+                                onChange={(e) => updateStop(stop.id, 'departureTime', e.target.value)}
+                                className="w-full px-2 py-1 bg-gray-900 border border-gray-700 rounded text-white text-xs"
+                              />
+                            </div>
+                            <div>
+                              <label className="text-xs text-gray-400">Duration (min)</label>
+                              <input
+                                type="number"
+                                value={stop.duration || 5}
+                                onChange={(e) => updateStop(stop.id, 'duration', parseInt(e.target.value))}
+                                className="w-full px-2 py-1 bg-gray-900 border border-gray-700 rounded text-white text-xs"
+                                min="1"
+                              />
+                            </div>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              )}
             </div>
 
             <div className="flex justify-end gap-3 mt-4 sm:mt-6 pt-2 sm:pt-0">
