@@ -7,7 +7,6 @@ import Dashboard from './pages/Dashboard';
 import FleetManagement from './pages/FleetManagement';
 import DriversManagement from './pages/DriversManagement';
 import RoutesManagement from './pages/RoutesManagement';
-import ScheduleManagement from './pages/ScheduleManagement';
 import Analytics from './pages/Analytics';
 import Settings from './pages/Settings';
 import CompaniesManagement from './pages/CompaniesManagement';
@@ -86,11 +85,6 @@ const App = () => {
             <Route path="/routes" element={
               <AuthenticatedLayout>
                 <SuperAdminGuard><RoutesManagement /></SuperAdminGuard>
-              </AuthenticatedLayout>
-            } />
-            <Route path="/schedule" element={
-              <AuthenticatedLayout>
-                <SuperAdminGuard><ScheduleManagement /></SuperAdminGuard>
               </AuthenticatedLayout>
             } />
             <Route path="/bookings" element={
