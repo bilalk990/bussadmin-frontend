@@ -104,6 +104,7 @@ const Sidebar = () => {
         { id: '/fleet',      icon: <Bus size={20} />,             label: 'Fleet Management' },
         { id: '/drivers',    icon: <Users size={20} />,           label: 'Drivers' },
         { id: '/routes',     icon: <Route size={20} />,           label: 'Routes' },
+        { id: '/schedule',   icon: <CalendarClock size={20} />,   label: 'Schedule' },
         { id: '/bookings',   icon: <Ticket size={20} />,          label: 'Bookings' },
         { id: '/support',    icon: <Headphones size={20} />,      label: 'Support Tickets' },
         { id: '/staff',      icon: <UserCog size={20} />,         label: 'Staff' },
