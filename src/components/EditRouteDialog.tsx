@@ -203,8 +203,8 @@ export const EditRouteDialog: React.FC<EditRouteDialogProps> = ({ isOpen, onClos
       <div className="fixed inset-0 bg-black/30" aria-hidden="true" />
       
       <div className="fixed inset-0 flex items-center justify-center p-2 sm:p-4">
-        <Dialog.Panel className="w-full max-w-lg sm:max-w-2xl rounded-lg bg-gray-900 p-3 sm:p-6">
-          <div className="flex items-center justify-between mb-4 sm:mb-6">
+        <Dialog.Panel className="w-full max-w-lg sm:max-w-2xl rounded-lg bg-gray-900 p-3 sm:p-6 max-h-[90vh] flex flex-col overflow-hidden">
+          <div className="flex items-center justify-between mb-4 sm:mb-6 flex-shrink-0">
             <Dialog.Title className="text-lg sm:text-xl font-semibold text-white">Edit Route</Dialog.Title>
             <button onClick={onClose} className="text-gray-400 hover:text-white" aria-label="Close dialog">
               <X size={20} />
@@ -212,12 +212,12 @@ export const EditRouteDialog: React.FC<EditRouteDialogProps> = ({ isOpen, onClos
           </div>
 
           {error && (
-            <div className="mb-4 p-2 sm:p-3 bg-red-900/50 border border-red-800 rounded-md text-red-400 text-sm">
+            <div className="mb-4 p-2 sm:p-3 bg-red-900/50 border border-red-800 rounded-md text-red-400 text-sm flex-shrink-0">
               {error}
             </div>
           )}
 
-          <form onSubmit={handleSubmit} className="space-y-3 sm:space-y-4">
+          <form onSubmit={handleSubmit} className="space-y-3 sm:space-y-4 overflow-y-auto flex-1 pr-1">
             <div>
               <label className="block text-sm font-medium text-gray-400 mb-1">Route Name</label>
               <input
@@ -464,7 +464,7 @@ export const EditRouteDialog: React.FC<EditRouteDialogProps> = ({ isOpen, onClos
               )}
             </div>
 
-            <div className="flex justify-end gap-3 mt-4 sm:mt-6 pt-2 sm:pt-0">
+            <div className="flex justify-end gap-3 pt-4 border-t border-gray-700 flex-shrink-0 sticky bottom-0 bg-gray-900 pb-1">
               <button
                 type="button"
                 onClick={onClose}
