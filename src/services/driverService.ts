@@ -7,7 +7,9 @@ export interface Driver {
   email: string;
   phone: string;
   profilePicture: string;
-  assignedBus: string | null;
+  assignedBus: string | null;      // legacy field
+  assignedBusId: string | null;    // actual field from backend
+  bus: { id: string; name: string; plateNumber: string; status: string } | null;
   subCompanyId: string;
   role: string;
   status: string;

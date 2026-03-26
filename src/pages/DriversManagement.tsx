@@ -122,14 +122,9 @@ const DriversManagement = () => {
     setIsProcessing(true);
     try {
       await driverService.assignBus(selectedDriverId, busId);
-      // Update the driver's bus assignment in the local state
-      setDrivers(prevDrivers =>
-        prevDrivers.map(driver =>
-          driver._id === selectedDriverId
-            ? { ...driver, assignedBus: busId }
-            : driver
-        )
-      );
+      // Refresh drivers list to get updated bus info
+      const response = await driverService.getDrivers();
+      setDrivers(response.data);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to assign bus');
     } finally {
@@ -143,14 +138,9 @@ const DriversManagement = () => {
     setIsProcessing(true);
     try {
       await driverService.unassignBus(driverId);
-      // Update the driver's bus assignment in the local state
-      setDrivers(prevDrivers =>
-        prevDrivers.map(driver =>
-          driver._id === driverId
-            ? { ...driver, assignedBus: null }
-            : driver
-        )
-      );
+      // Refresh drivers list
+      const response = await driverService.getDrivers();
+      setDrivers(response.data);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to unassign bus');
     } finally {
@@ -408,7 +398,7 @@ const DriversManagement = () => {
                     <DriverMenu
                       driverId={driver._id}
                       status={driver.status}
-                      hasAssignedBus={!!driver.assignedBus}
+                      hasAssignedBus={!!(driver.assignedBusId || driver.assignedBus || driver.bus)}
                       onBan={handleBanDriver}
                       onUnban={handleUnbanDriver}
                       onDelete={handleDeleteDriver}
@@ -436,7 +426,7 @@ const DriversManagement = () => {
 
                   <div className="mt-2 sm:mt-4 pt-2 sm:pt-4 border-t border-gray-800/50">
                     <div className="flex items-center justify-between">
-                      {!driver.assignedBus && (
+                      {!(driver.assignedBusId || driver.assignedBus || driver.bus) && (
                         <button
                           className="px-2 sm:px-3 py-1 sm:py-1.5 rounded-lg bg-primary-900/30 text-[10px] sm:text-xs text-primary-400 hover:bg-primary-900/50 transition-colors flex items-center gap-1 sm:gap-2"
                           onClick={() => handleAssignBus(driver._id)}
@@ -444,6 +434,12 @@ const DriversManagement = () => {
                           <Bus size={12} className="sm:w-4 sm:h-4" />
                           <span>Assign Bus</span>
                         </button>
+                      )}
+                      {(driver.assignedBusId || driver.assignedBus || driver.bus) && (
+                        <span className="px-2 sm:px-3 py-1 sm:py-1.5 rounded-lg bg-success-900/30 text-[10px] sm:text-xs text-success-400 flex items-center gap-1 sm:gap-2">
+                          <Bus size={12} className="sm:w-4 sm:h-4" />
+                          <span>{driver.bus?.name || 'Bus Assigned'}</span>
+                        </span>
                       )}
                     </div>
                   </div>
