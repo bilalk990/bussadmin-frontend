@@ -8,9 +8,9 @@ import { bookingService, Booking, BusBookingSummary } from '../services/bookingS
 
 const STATUS_COLORS: Record<string, string> = {
   confirmed: 'bg-green-900/40 text-green-400 border border-green-700/40',
-  pending:   'bg-yellow-900/40 text-yellow-400 border border-yellow-700/40',
+  pending: 'bg-yellow-900/40 text-yellow-400 border border-yellow-700/40',
   cancelled: 'bg-red-900/40 text-red-400 border border-red-700/40',
-  resold:    'bg-blue-900/40 text-blue-400 border border-blue-700/40',
+  resold: 'bg-blue-900/40 text-blue-400 border border-blue-700/40',
 };
 
 const BookingsManagement = () => {
@@ -106,9 +106,8 @@ const BookingsManagement = () => {
       <div className="flex gap-2 border-b border-gray-800">
         {(['bookings', 'buses'] as const).map(tab => (
           <button key={tab} onClick={() => setActiveTab(tab)}
-            className={`px-4 py-2 text-sm font-medium capitalize transition-colors border-b-2 -mb-px ${
-              activeTab === tab ? 'border-blue-500 text-white' : 'border-transparent text-gray-400 hover:text-white'
-            }`}>
+            className={`px-4 py-2 text-sm font-medium capitalize transition-colors border-b-2 -mb-px ${activeTab === tab ? 'border-blue-500 text-white' : 'border-transparent text-gray-400 hover:text-white'
+              }`}>
             {tab === 'bookings' ? 'All Bookings' : 'Per Bus Summary'}
           </button>
         ))}
@@ -163,7 +162,7 @@ const BookingsManagement = () => {
                 <table className="w-full text-sm">
                   <thead>
                     <tr className="border-b border-gray-800 text-gray-400 text-xs uppercase">
-                      <th className="text-left px-4 py-3">Booking ID</th>
+                      <th className="text-left px-4 py-3">Ticket / Seat</th>
                       <th className="text-left px-4 py-3">Passenger</th>
                       <th className="text-left px-4 py-3">Bus / Route</th>
                       <th className="text-left px-4 py-3">Departure</th>
@@ -176,7 +175,17 @@ const BookingsManagement = () => {
                       <motion.tr key={b.id}
                         initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: i * 0.02 }}
                         className="border-b border-gray-800/50 hover:bg-gray-800/30 transition-colors">
-                        <td className="px-4 py-3 text-gray-400 font-mono text-xs">#{b.id}</td>
+                        <td className="px-4 py-3">
+                          <p className="text-blue-400 font-mono text-xs font-bold">{b.ticketNumber}</p>
+                          <p className="text-gray-500 text-[10px] mt-0.5">ID: #{b.id}</p>
+                          <div className="flex flex-wrap gap-1 mt-1">
+                            {Array.isArray(b.seats) ? b.seats.map(s => (
+                              <span key={s} className="px-1.5 py-0.5 bg-blue-900/30 text-blue-300 rounded text-[10px] border border-blue-700/30">
+                                Seat {s}
+                              </span>
+                            )) : <span className="text-gray-500 text-[10px]">No seats</span>}
+                          </div>
+                        </td>
                         <td className="px-4 py-3">
                           <p className="text-white font-medium">{b.userEmail !== 'N/A' ? b.userEmail : 'Passenger'}</p>
                           <p className="text-gray-500 text-xs">{b.userEmail}</p>

@@ -16,6 +16,8 @@ export interface Booking {
   departureTime: string;
   totalAmount: number;
   status: 'confirmed' | 'pending' | 'cancelled' | 'resold';
+  ticketNumber: string;
+  seats: string[] | number[];
   createdAt: string;
 }
 

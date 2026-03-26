@@ -324,5 +324,33 @@ export const tripHistoryService = {
       console.error('Error updating trip:', error);
       throw error;
     }
+  },
+
+  async deleteSchedule(tripId: string): Promise<any> {
+    const token = authService.getToken();
+    try {
+      const response = await fetch(`${BASE_URL}/sub-company/delete-trip/${tripId}`, {
+        method: 'DELETE',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
+      });
+
+      if (authService.handleTokenExpiration(response)) {
+        throw new Error('Token expired');
+      }
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.message || 'Failed to delete trip');
+      }
+
+      return data;
+    } catch (error) {
+      console.error('Error deleting trip:', error);
+      throw error;
+    }
   }
-}; 
+};

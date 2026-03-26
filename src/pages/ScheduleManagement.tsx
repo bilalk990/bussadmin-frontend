@@ -14,7 +14,8 @@ import {
   Map,
   User,
   X,
-  MapPin
+  MapPin,
+  Trash2
 } from 'lucide-react';
 import {
   tripHistoryService,
@@ -64,6 +65,7 @@ const ScheduleManagement = () => {
     driverId: string;
   } | null>(null);
   const [isCreating, setIsCreating] = useState(false);
+  const [isDeleting, setIsDeleting] = useState<string | null>(null);
 
   // Fetch schedules on component mount
   useEffect(() => {
@@ -349,6 +351,32 @@ const ScheduleManagement = () => {
     }
   };
 
+  const handleDeleteSchedule = async (tripId: string) => {
+    if (!window.confirm('Are you sure you want to delete this schedule? This action cannot be undone.')) {
+      return;
+    }
+
+    try {
+      setIsDeleting(tripId);
+      await tripHistoryService.deleteSchedule(tripId);
+
+      // Refresh schedules
+      const response = await tripHistoryService.getTripHistory();
+      setSchedules(response.data);
+
+      // Clear selected schedule if it was the one deleted
+      if (selectedSchedule === tripId) setSelectedSchedule(null);
+      if (selectedTripId === tripId) setSelectedTripId(null);
+
+      setError(null);
+    } catch (err) {
+      console.error('Error deleting schedule:', err);
+      setError('Failed to delete schedule. Please try again.');
+    } finally {
+      setIsDeleting(null);
+    }
+  };
+
   if (loading) {
     return (
       <div className="flex items-center justify-center h-screen">
@@ -383,8 +411,8 @@ const ScheduleManagement = () => {
           <div className="flex items-center gap-2">
             <button
               className={`px-2 sm:px-3 py-1 rounded-lg text-xs sm:text-sm font-medium transition-colors ${activeView === 'timeline'
-                  ? 'bg-primary-900 text-white'
-                  : 'text-gray-400 hover:text-white'
+                ? 'bg-primary-900 text-white'
+                : 'text-gray-400 hover:text-white'
                 }`}
               onClick={() => setActiveView('timeline')}
             >
@@ -392,8 +420,8 @@ const ScheduleManagement = () => {
             </button>
             <button
               className={`px-2 sm:px-3 py-1 rounded-lg text-xs sm:text-sm font-medium transition-colors ${activeView === 'grid'
-                  ? 'bg-primary-900 text-white'
-                  : 'text-gray-400 hover:text-white'
+                ? 'bg-primary-900 text-white'
+                : 'text-gray-400 hover:text-white'
                 }`}
               onClick={() => setActiveView('grid')}
             >
@@ -860,7 +888,12 @@ const ScheduleManagement = () => {
                         </div>
 
                         <div className="flex justify-end gap-2">
-                          <button className="btn-secondary text-xs sm:text-sm">View Details</button>
+                          <button
+                            onClick={() => handleViewClick(schedule._id)}
+                            className="btn-secondary text-xs sm:text-sm"
+                          >
+                            View Details
+                          </button>
                           <button
                             onClick={(e) => {
                               e.stopPropagation();
@@ -869,6 +902,21 @@ const ScheduleManagement = () => {
                             className="btn-primary text-xs sm:text-sm"
                           >
                             Edit
+                          </button>
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleDeleteSchedule(schedule._id);
+                            }}
+                            className="px-3 py-1.5 rounded-lg bg-red-900/40 text-red-400 hover:bg-red-900/60 transition-colors flex items-center gap-1.5 text-xs sm:text-sm"
+                            disabled={isDeleting === schedule._id}
+                          >
+                            {isDeleting === schedule._id ? (
+                              <div className="animate-spin rounded-full h-3 w-3 border-t-2 border-b-2 border-red-400"></div>
+                            ) : (
+                              <Trash2 size={14} />
+                            )}
+                            Delete
                           </button>
                         </div>
                       </div>
@@ -943,6 +991,21 @@ const ScheduleManagement = () => {
                       className="btn-primary text-xs"
                     >
                       Edit
+                    </button>
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleDeleteSchedule(schedule._id);
+                      }}
+                      className="p-1.5 rounded-lg bg-red-900/40 text-red-400 hover:bg-red-900/60 transition-colors"
+                      disabled={isDeleting === schedule._id}
+                      title="Delete Schedule"
+                    >
+                      {isDeleting === schedule._id ? (
+                        <div className="animate-spin rounded-full h-4 w-4 border-t-2 border-b-2 border-red-400"></div>
+                      ) : (
+                        <Trash2 size={16} />
+                      )}
                     </button>
                   </div>
                 </div>

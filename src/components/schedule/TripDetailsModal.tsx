@@ -6,7 +6,6 @@ import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 import { tripHistoryService, TripDetails, Location } from '../../services/tripHistoryService';
 import { authService } from '../../services/authService';
-import { locationService } from '../../services/locationService';
 
 // Fix for default marker icons
 const defaultIcon = L.icon({
@@ -33,7 +32,6 @@ const TripDetailsModal = ({ tripId, onClose }: TripDetailsModalProps) => {
   const [originLocation, setOriginLocation] = useState<Location | null>(null);
   const [destinationLocation, setDestinationLocation] = useState<Location | null>(null);
   const [isLocationsValid, setIsLocationsValid] = useState(true);
-  const [locations, setLocations] = useState<Location[]>([]);
 
   useEffect(() => {
     const fetchTripDetails = async () => {
@@ -57,11 +55,11 @@ const TripDetailsModal = ({ tripId, onClose }: TripDetailsModalProps) => {
             tripHistoryService.getLocationData(data.data.route.destination)
           ]);
 
-          if (Array.isArray(originData) && Array.isArray(destinationData) && 
-              originData.length > 0 && destinationData.length > 0) {
+          if (Array.isArray(originData) && Array.isArray(destinationData) &&
+            originData.length > 0 && destinationData.length > 0) {
             const origin = originData[0];
             const destination = destinationData[0];
-            
+
             setOriginLocation({
               lat: parseFloat(origin.lat.toString()),
               lon: parseFloat(origin.lon.toString()),
@@ -93,25 +91,6 @@ const TripDetailsModal = ({ tripId, onClose }: TripDetailsModalProps) => {
     fetchTripDetails();
   }, [tripId]);
 
-  useEffect(() => {
-    const fetchLocations = async () => {
-      try {
-        const locations = await Promise.all(
-          tripDetails?.stops.map(stop => 
-            locationService.searchLocations(stop)
-          ) || []
-        );
-        setLocations(locations);
-      } catch (locationError) {
-        console.error('Error fetching locations');
-        setError('Failed to load location data');
-      }
-    };
-
-    if (tripDetails) {
-      fetchLocations();
-    }
-  }, [tripDetails]);
 
   const formatTime = (dateString: string) => {
     return new Date(dateString).toLocaleTimeString('en-US', {
@@ -213,26 +192,32 @@ const TripDetailsModal = ({ tripId, onClose }: TripDetailsModalProps) => {
 
           {/* Details Section - Scrollable */}
           <div className="space-y-6 overflow-y-auto pr-4">
-            {tripDetails && (
+            {tripDetails ? (
               <>
                 {/* Route Details */}
                 <div className="space-y-2">
                   <h3 className="text-lg font-semibold text-white">Route Information</h3>
                   <div className="flex items-center gap-2 text-gray-400">
                     <MapPin size={16} />
-                    <span>{tripDetails.route.name}</span>
+                    <span>{tripDetails.route?.name || "Unknown Route"}</span>
                   </div>
                   <div className="flex items-center gap-2 text-gray-400">
-                    <span className="text-sm">{tripDetails.route.origin} → {tripDetails.route.destination}</span>
+                    <span className="text-sm">
+                      {tripDetails.route ? `${tripDetails.route.origin} → ${tripDetails.route.destination}` : "N/A"}
+                    </span>
                   </div>
                   <div className="flex items-center gap-2 text-gray-400">
-                    <span className="text-sm">Distance: {tripDetails.route.distance}km</span>
+                    <span className="text-sm">Distance: {tripDetails.route?.distance || 0}km</span>
                   </div>
                   <div className="flex items-center gap-2 text-gray-400">
-                    <span className="text-sm">Adult Price: € {tripDetails.route.adultPrice.toLocaleString()}</span>
+                    <span className="text-sm">
+                      Adult Price: {tripDetails.route ? `€ ${tripDetails.route.adultPrice.toLocaleString()}` : "N/A"}
+                    </span>
                   </div>
                   <div className="flex items-center gap-2 text-gray-400">
-                    <span className="text-sm">Child Price: € {tripDetails.route.childPrice.toLocaleString()}</span>
+                    <span className="text-sm">
+                      Child Price: {tripDetails.route ? `€ ${tripDetails.route.childPrice.toLocaleString()}` : "N/A"}
+                    </span>
                   </div>
                 </div>
 
@@ -249,11 +234,15 @@ const TripDetailsModal = ({ tripId, onClose }: TripDetailsModalProps) => {
                           </div>
                           <div className="flex items-center gap-2 text-gray-400">
                             <Clock size={16} />
-                            <span className="text-sm">Arrival: {formatTime(stop.arrivalTime)}</span>
+                            <span className="text-sm">
+                              Arrival: {stop.arrivalTime ? formatTime(stop.arrivalTime) : "N/A"}
+                            </span>
                           </div>
                           <div className="flex items-center gap-2 text-gray-400">
                             <Clock size={16} />
-                            <span className="text-sm">Departure: {formatTime(stop.departureTime)}</span>
+                            <span className="text-sm">
+                              Departure: {stop.departureTime ? formatTime(stop.departureTime) : "N/A"}
+                            </span>
                           </div>
                         </div>
                       ))}
@@ -281,16 +270,16 @@ const TripDetailsModal = ({ tripId, onClose }: TripDetailsModalProps) => {
                   <h3 className="text-lg font-semibold text-white">Bus Information</h3>
                   <div className="flex items-center gap-2 text-gray-400">
                     <Bus size={16} />
-                    <span>{tripDetails.bus.name}</span>
+                    <span>{tripDetails.bus?.name || "Unknown Bus"}</span>
                   </div>
                   <div className="flex items-center gap-2 text-gray-400">
-                    <span className="text-sm">Plate Number: {tripDetails.bus.plateNumber}</span>
+                    <span className="text-sm">Plate Number: {tripDetails.bus?.plateNumber || "N/A"}</span>
                   </div>
                   <div className="flex items-center gap-2 text-gray-400">
-                    <span className="text-sm">Type: {tripDetails.bus.type}</span>
+                    <span className="text-sm">Type: {tripDetails.bus?.type || "N/A"}</span>
                   </div>
                   <div className="flex items-center gap-2 text-gray-400">
-                    <span className="text-sm">Capacity: {tripDetails.bus.capacity} seats</span>
+                    <span className="text-sm">Capacity: {tripDetails.bus?.capacity || 0} seats</span>
                   </div>
                 </div>
 
@@ -299,13 +288,18 @@ const TripDetailsModal = ({ tripId, onClose }: TripDetailsModalProps) => {
                   <h3 className="text-lg font-semibold text-white">Driver Information</h3>
                   <div className="flex items-center gap-2 text-gray-400">
                     <User size={16} />
-                    <span>{tripDetails.driver.name}</span>
+                    <span>{tripDetails.driver?.name || "N/A"}</span>
                   </div>
                   <div className="flex items-center gap-2 text-gray-400">
-                    <span className="text-sm">Phone: {tripDetails.driver.phone}</span>
+                    <span className="text-sm">Phone: {tripDetails.driver?.phone || "N/A"}</span>
                   </div>
                 </div>
               </>
+            ) : (
+              <div className="flex flex-col items-center justify-center h-full text-gray-400">
+                <AlertCircle size={48} className="mb-4 opacity-20" />
+                <p>No details available for this trip.</p>
+              </div>
             )}
           </div>
         </div>

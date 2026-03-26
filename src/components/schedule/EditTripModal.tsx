@@ -65,7 +65,8 @@ const EditTripModal = ({
         {
           departureTime: departureTime.toISOString(),
           arrivalTime: arrivalTime.toISOString(),
-          driverId
+          driverId,
+          stops: []
         }
       );
 
